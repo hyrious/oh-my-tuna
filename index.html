@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Oh My TUNA</title>
+    <meta name="viewport" content="width=device-width">
+    <style>
+        :root {
+            --red: #e81123;
+            --hover: #e5e5e5;
+            --black: #333;
+            --white: #fff;
+            --powershell-blue: #012456;
+            --powershell-selection-bg: rgba(254,219,169,.996);
+            --powershell-selection: #11120f;
+        }
+        html {
+            height: 100%;
+        }
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 100px 0;
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Segoe UI, sans-serif;
+            color: var(--black);
+        }
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            font-weight: normal;
+        }
+        .Window {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 640px;
+            height: 400px;
+            margin: 0 auto 1em;
+            border: 1px solid;
+            box-shadow: 0 1px 8px 0 rgba(0,0,0,.3);
+            transition: filter 300ms linear;
+        }
+        @media screen and (max-width: 700px) {
+            .Window {
+                width: 480px;
+            }
+        }
+        @media screen and (max-width: 500px) {
+            body {
+                font-size: 14px;
+            }
+            .Window {
+                width: 400px;
+            }
+        }
+        @media screen and (max-width: 400px) {
+            body {
+                font-size: 14px;
+            }
+            .Window {
+                width: initial;
+            }
+        }
+        .Window > .title-bar {
+            height: 30px;
+            display: flex;
+            align-items: center;
+            user-select: none;
+            -moz-user-select: none;
+            cursor: default;
+        }
+        .Window > .title-bar > .title {
+            flex: 1;
+            vertical-align: middle;
+            line-height: 30px;
+            font-size: 13px;
+        }
+        .Window > .title-bar > .icon,
+        .Window > .title-bar > .min,
+        .Window > .title-bar > .max,
+        .Window > .title-bar > .close {
+            width: 47px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .Window > .title-bar > .icon {
+            width: 30px;
+        }
+        .Window > .title-bar > .min:hover,
+        .Window > .title-bar > .max:hover {
+            background-color: var(--hover);
+        }
+        .Window > .title-bar > .close:hover {
+            background-color: var(--red);
+        }
+        .Window > .title-bar > .close:hover > svg {
+            stroke: var(--white);
+        }
+        .Window > .powershell {
+            flex: 1;
+            overflow-y: scroll;
+            background: var(--powershell-blue);
+            font-size: 14px;
+            font-family: Consolas, monospace;
+            color: var(--white);
+            cursor: default;
+        }
+        .Window > .powershell > .console {
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+        .Window > .powershell > .console ::selection {
+            background-color: var(--powershell-selection-bg);
+            color: var(--powershell-selection);
+        }
+        .Window > .powershell > .console > .line::before {
+            content: 'PS C:\\> ';
+        }
+        .Window > .powershell > .console > .line > .cmdlet {
+            color: yellow;
+        }
+        .Window > .powershell > .console > .line > .comment {
+            color: rgb(0,216,0);
+        }
+        .Window > .powershell > .console > .line > .string {
+            color: cyan;
+        }
+        .Window > .powershell > .console > .line > .option {
+            color: lightgray;
+        }
+        .Window > .powershell > .console > .cursor {
+            animation: caret .75s step-end infinite;
+        }
+        @keyframes caret {
+            from, to { color: var(--white) }
+            50% { color: transparent }
+        }
+        .Window.NotResponding {
+            filter: brightness(3) grayscale(.8);
+            user-select: none;
+            cursor: default;
+        }
+        #Error {
+            display: none;
+            position: absolute;
+            left: 25px;
+            top: 25px;
+            width: initial;
+            height: initial;
+            background-color: var(--white);
+        }
+        #Error > .content > .title {
+            margin: 12px 10px;
+            font-size: 14px;
+            color: #003399;
+        }
+        #Error > .content > .description {
+            margin: 4px 10px 8px;
+            font-size: 12px;
+        }
+        #Error > .content > .footer {
+            padding: 10px;
+            border-top: 1px solid #dfdfdf;
+            background-color: #f0f0f0;
+            display: flex;
+        }
+        #Error > .content > .footer > .spacer {
+            flex: 1;
+        }
+        #Error > .content > .footer > button {
+            margin-left: 8px;
+        }
+        .debug {
+            outline: 1px solid var(--red);
+        }
+        .pause-animation {
+            animation-play-state: paused !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Keep Calm & Use <strong><em>TUNA</em></strong></h1>
+    <div class="Window" id="Program">
+        <div class="title-bar">
+            <span class="icon">
+                <svg width="30" height="30" viewBox="0 0 30 30" stroke-linejoin="round">
+                    <path d="M12 10L24 10L20 20L8 20z" stroke="#457ad5" fill="#4376ce" stroke-width="2"/>
+                    <path d="M13 11L16 15L10 19M16 18L20 18" stroke="white" stroke-width="2" fill="transparent"/>
+                </svg>
+            </span>
+            <span class="title">Windows PowerShell</span>
+            <span class="min">
+                <svg width="10" height="1" viewBox="0 0 10 1">
+                    <path d="M0 0L10 0" stroke="black" stroke-width="2"/>
+                </svg>
+            </span>
+            <span class="max">
+                <svg width="10" height="10" viewBox="0 0 10 10">
+                    <rect x="0" y="0" width="10" height="10" stroke="black" fill="transparent" stroke-width="2"/>
+                </svg>
+            </span>
+            <span class="close">
+                <svg width="10" height="10" viewBox="0 0 10 10" stroke="#333">
+                    <path d="M0 0L10 10" stroke-width="1"/>
+                    <path d="M0 10L10 0" stroke-width="1"/>
+                </svg>
+            </span>
+        </div>
+        <div class="powershell">
+            <div class="console">
+                <div class="line"><span class="cmdlet">wget</span>  <span class="string">'https://hyrious.me/oh-my-tuna/oh-my-tuna.ps1'</span> <span class="option">-o</span>  <span class="string">'oh-my-tuna.ps1'</span></div>
+                <div class="line"><span class="comment"># Apply TUNA mirror</span></div>
+                <div class="line"><span class="cmdlet">.\oh-my-tuna.ps1</span></div>
+                <span class="cursor">_</span>
+            </div>
+        </div>
+    </div>
+    <div class="Window" id="Error">
+        <div class="title-bar">
+            <span class="icon">
+                <svg width="30" height="30" viewBox="0 0 30 30" stroke-linejoin="round">
+                    <path d="M12 10L24 10L20 20L8 20z" stroke="#457ad5" fill="#4376ce" stroke-width="2"/>
+                    <path d="M13 11L16 15L10 19M16 18L20 18" stroke="white" stroke-width="2" fill="transparent"/>
+                </svg>
+            </span>
+            <span class="title">Windows PowerShell</span>
+            <span class="min">
+                <svg width="10" height="1" viewBox="0 0 10 1">
+                    <path d="M0 0L10 0" stroke="black" stroke-width="2"/>
+                </svg>
+            </span>
+            <span class="max">
+                <svg width="10" height="10" viewBox="0 0 10 10">
+                    <rect x="0" y="0" width="10" height="10" stroke="black" fill="transparent" stroke-width="2"/>
+                </svg>
+            </span>
+            <span class="close">
+                <svg width="10" height="10" viewBox="0 0 10 10" stroke="#333">
+                    <path d="M0 0L10 10" stroke-width="1"/>
+                    <path d="M0 10L10 0" stroke-width="1"/>
+                </svg>
+            </span>
+        </div>
+        <div class="content">
+            <div class="title">Windows PowerShell has stopped working</div>
+            <div class="description">
+                A problem caused the program to stop working correctly.<br>
+                Windows will close the program and notify you if a solution is<br>
+                available.
+            </div>
+            <div class="footer">
+                <span class="spacer"></span>
+                <button disabled>Debug</button>
+                <button id="Close">Close program</button>
+            </div>
+        </div>
+    </div>
+    <div class="Buttons"></div>
+    <script>
+        ;(function () {
+            'use strict';
+            function $(sel) {
+                return document.querySelector(sel);
+            }
+            function delay(ms) {
+                return new Promise((resolve) => {
+                    setTimeout(resolve, ms);
+                });
+            }
+            var phase = 0;
+            $('#Program > .title-bar > .close').addEventListener('click', async function () {
+                if (phase == 0) {
+                    phase = 1;
+                    await delay(1250);
+                    $('.cursor').classList.add('pause-animation');
+                    await delay(1750);
+                    $('#Program').classList.add('NotResponding');
+                    phase = 2;
+                } else if (phase == 2) {
+                    $('#Error').style.display = 'flex';
+                }
+            });
+            $('#Close').addEventListener('click', function () {
+                location.reload();
+            });
+        })();
+    </script>
+</body>
+</html>
