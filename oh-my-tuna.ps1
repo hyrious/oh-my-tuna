@@ -129,7 +129,7 @@ register @('msys2') {
     }
 }
 
-register @('stack') {
+register @('stack','stackage') {
     if (which 'stack') {
         $file = "$env:APPDATA\stack\config.yaml"
         touch $file

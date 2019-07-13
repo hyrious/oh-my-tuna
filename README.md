@@ -24,7 +24,9 @@ Set-ExecutionPolicy RemoteSigned -scope CurrentUser
 
 - CTAN
 - PyPI
+- MSYS2
 - RubyGems
+- stackage
 
 ## License
 
