@@ -42,6 +42,14 @@ function first($a, $b) { if ($a) { return $a } $b }
 
 function which($exe) { (Get-Command $exe -ErrorAction Ignore).Path }
 
+function touch($file) {
+    if (Test-Path $file) {
+        (Get-ChildItem $file).LastWriteTime = Get-Date
+    } else {
+        New-Item $file -ItemType File -Force | Out-Null
+    }
+}
+
 function register([string[]]$name, [scriptblock]$action) {
     $all.Add($name[0])
     $table.$name = $action
@@ -94,8 +102,43 @@ register @('tex','latex','ctan') {
     }
 }
 
-# TODO: msys2, stack
+register @('msys2') {
+    $regkey = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+    $dir = Get-ChildItem $regkey -Name `
+        | foreach { Get-ItemProperty "$regkey\$_" } `
+        | where DisplayName -Like 'MSYS2*'
+    if ($dir) {
+        $loc = $dir.InstallLocation
+        if (Test-Path "$loc\usr\bin\msys-2.0.dll") {
+            $payload = @{
+                mingw32 = "$baseurl/msys2/mingw/i686"
+                mingw64 = "$baseurl/msys2/mingw/x86_64"
+                msys = "$baseurl/msys2/msys/`$arch"
+            }
+            foreach ($k in $payload.Keys) {
+                $file = "$loc\etc\pacman.d\mirrorlist.$k"
+                $str = "Server = $($payload.$k)"
+                $content = Get-Content $file
+                $exist = $content | Select-String $str -SimpleMatch
+                if (!$exist) {
+                    $str,$content | Set-Content $file
+                }
+                Write-Host "Updated $file"
+            }
+        }
+    }
+}
 
+register @('stack') {
+    if (which 'stack') {
+        $file = "$env:APPDATA\stack\config.yaml"
+        touch $file
+        "setup-info: `"$baseurl/stackage/stack-setup.yaml`"",
+        "urls:",
+        "  latest-snapshot: $baseurl/stackage/snapshots.json" | Set-Content $file
+        Write-Host "Updated $file"
+    }
+}
 
 # process
 foreach ($x in (first $args $all)) {
