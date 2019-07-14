@@ -27,6 +27,9 @@ Set-ExecutionPolicy RemoteSigned -scope CurrentUser
 - MSYS2
 - RubyGems
 - stackage
+- Rustup
+- Anaconda
+- Flutter
 
 ## License
 

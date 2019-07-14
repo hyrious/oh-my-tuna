@@ -35,6 +35,7 @@ $baseurl = 'https://mirrors.tuna.tsinghua.edu.cn'
 $thehost = 'tuna.tsinghua.edu.cn'
 $table = @{}
 $all = {@()}.Invoke()
+$fromargs = $true
 
 
 # helper functions
@@ -122,8 +123,8 @@ register @('msys2') {
                 $exist = $content | Select-String $str -SimpleMatch
                 if (!$exist) {
                     $str,$content | Set-Content $file
+                    Write-Host "Updated $file"
                 }
-                Write-Host "Updated $file"
             }
         }
     }
@@ -140,7 +141,40 @@ register @('stack','stackage') {
     }
 }
 
+register @('conda','anaconda') {
+    if (which 'conda') {
+        sh "conda config --add channels $baseurl/anaconda/pkgs/free/"
+        sh "conda config --add channels $baseurl/anaconda/pkgs/main/"
+        sh "conda config --set show_channel_urls yes"
+        sh "conda config --add channels $baseurl/anaconda/cloud/conda-forge/"
+        sh "conda config --add channels $baseurl/anaconda/cloud/msys2/"
+        sh "conda config --add channels $baseurl/anaconda/cloud/bioconda/"
+        sh "conda config --add channels $baseurl/anaconda/cloud/menpo/"
+        sh "conda config --add channels $baseurl/anaconda/cloud/pytorch/"
+    }
+}
+
+register @('flutter') {
+    # by default flutter is not applied unless specified
+    if ($fromargs) {
+        $url = "$baseurl/flutter"
+        sh "setx FLUTTER_STORAGE_BASE_URL $url"
+    } else {
+        Write-Host 'Run ".\oh-my-tuna.ps1 flutter" to enable it'
+    }
+}
+
+register @('rustup') {
+    if (which 'rustup') {
+        $url = "$baseurl/rustup"
+        sh "setx RUSTUP_DIST_SERVER $url"
+    }
+}
+
+
 # process
-foreach ($x in (first $args $all)) {
+$ks = first $args $all
+$fromargs = [string]$ks -ne [string]$all
+foreach ($x in $ks) {
     play $x
 }
